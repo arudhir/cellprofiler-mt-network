@@ -110,53 +110,46 @@ class MitochondrialGraphAnalyzer:
         return mito_df
     
     def build_cell_graph(self, cell_mito: pd.DataFrame) -> nx.Graph:
-        """
-        Build spatial graph for mitochondria within a single cell.
-        
-        Args:
-            cell_mito: DataFrame of mitochondria for one cell
-            
-        Returns:
-            NetworkX graph
-        """
-        if len(cell_mito) < 2:
-            # Single mitochondrion or empty cell
-            G = nx.Graph()
-            for _, mito in cell_mito.iterrows():
-                G.add_node(mito['ObjectNumber'], 
-                          x=mito['Location_Center_X'],
-                          y=mito['Location_Center_Y'],
-                          area=mito.get('AreaShape_Area', np.nan),
-                          eccentricity=mito.get('AreaShape_Eccentricity', np.nan),
-                          solidity=mito.get('AreaShape_Solidity', np.nan))
-            return G
-        
-        # Extract coordinates
-        coords = cell_mito[['Location_Center_X', 'Location_Center_Y']].values
-        
-        # Calculate pairwise distances
-        distances = squareform(pdist(coords))
-        
-        # Create graph
+        """Build spatial graph for mitochondria within a single cell."""
+        return self.build_global_graph(cell_mito)
+
+    def build_global_graph(self, mito_df: pd.DataFrame) -> nx.Graph:
+        """Build spatial graph for mitochondria across all cells."""
         G = nx.Graph()
-        
-        # Add nodes with attributes
-        for _, mito in cell_mito.iterrows():
-            G.add_node(mito['ObjectNumber'],
-                      x=mito['Location_Center_X'],
-                      y=mito['Location_Center_Y'], 
-                      area=mito.get('AreaShape_Area', np.nan),
-                      eccentricity=mito.get('AreaShape_Eccentricity', np.nan),
-                      solidity=mito.get('AreaShape_Solidity', np.nan))
-        
-        # Add edges for mitochondria within distance threshold
-        mito_ids = cell_mito['ObjectNumber'].values
+
+        if len(mito_df) == 0:
+            return G
+
+        coords = mito_df[['Location_Center_X', 'Location_Center_Y']].values
+        distances = squareform(pdist(coords))
+
+        areas = mito_df.get('AreaShape_Area', pd.Series(np.nan, index=mito_df.index)).fillna(0).values
+        radii = np.sqrt(areas / np.pi)
+
+        # Add nodes
+        for _, mito in mito_df.iterrows():
+            G.add_node(
+                mito['ObjectNumber'],
+                x=mito['Location_Center_X'],
+                y=mito['Location_Center_Y'],
+                cell_id=mito['Parent_Cells'],
+                area=mito.get('AreaShape_Area', np.nan),
+                eccentricity=mito.get('AreaShape_Eccentricity', np.nan),
+                solidity=mito.get('AreaShape_Solidity', np.nan),
+            )
+
+        mito_ids = mito_df['ObjectNumber'].values
         for i in range(len(mito_ids)):
             for j in range(i + 1, len(mito_ids)):
-                if distances[i, j] <= self.distance_threshold_pixels:
-                    G.add_edge(mito_ids[i], mito_ids[j], 
-                             distance=distances[i, j] * self.pixel_size)
-        
+                dist = distances[i, j]
+                touching = dist <= (radii[i] + radii[j])
+                if dist <= self.distance_threshold_pixels or touching:
+                    G.add_edge(
+                        mito_ids[i],
+                        mito_ids[j],
+                        distance=dist * self.pixel_size,
+                    )
+
         return G
     
     def calculate_graph_metrics(self, G: nx.Graph, cell_id: int) -> Dict:
