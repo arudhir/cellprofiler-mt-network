@@ -54,7 +54,6 @@ Thumbs.db
 *.pdf
 exports/
 debug_*
-test_*
 temp_*
 
 # Keep essential images
