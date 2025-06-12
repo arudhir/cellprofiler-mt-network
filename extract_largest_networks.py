@@ -18,77 +18,62 @@ from mitochondrial_graph_analyzer import MitochondrialGraphAnalyzer
 def analyze_all_networks(analyzer, data):
     """Analyze all networks and rank by size and density."""
     print("🔍 Analyzing all networks...")
-    
+
     mito_df = analyzer.preprocess_data(data)
-    cells = mito_df['Parent_Cells'].unique()
-    
+    G = analyzer.build_global_graph(mito_df)
+
     network_stats = []
-    
-    for cell_id in cells:
-        cell_mito = mito_df[mito_df['Parent_Cells'] == cell_id]
-        
-        if len(cell_mito) < 2:
+
+    components = list(nx.connected_components(G))
+
+    for comp_idx, component in enumerate(components):
+        if len(component) == 0:
             continue
-            
-        G = analyzer.build_cell_graph(cell_mito)
-        
-        if G.number_of_nodes() == 0:
-            continue
-            
-        # Get connected components
-        components = list(nx.connected_components(G))
-        
-        for comp_idx, component in enumerate(components):
-            if len(component) == 0:
-                continue
-                
-            subG = G.subgraph(component)
-            
-            # Calculate network metrics
-            num_nodes = len(component)
-            num_edges = subG.number_of_edges()
-            density = nx.density(subG) if num_nodes > 1 else 0
-            
-            # Calculate average degree
-            degrees = [subG.degree(node) for node in component]
-            avg_degree = np.mean(degrees) if degrees else 0
-            
-            # Get spatial bounds
-            positions = [(G.nodes[node]['x'], G.nodes[node]['y']) for node in component]
-            x_coords = [pos[0] for pos in positions]
-            y_coords = [pos[1] for pos in positions]
-            
-            bbox_width = max(x_coords) - min(x_coords)
-            bbox_height = max(y_coords) - min(y_coords)
-            bbox_area = bbox_width * bbox_height
-            
-            # Calculate diameter if connected
-            try:
-                if nx.is_connected(subG):
-                    diameter = nx.diameter(subG)
-                else:
-                    diameter = 0
-            except:
-                diameter = 0
-            
-            network_stats.append({
-                'cell_id': cell_id,
-                'component': comp_idx,
-                'num_nodes': num_nodes,
-                'num_edges': num_edges,
-                'density': density,
-                'avg_degree': avg_degree,
-                'diameter': diameter,
-                'bbox_width': bbox_width,
-                'bbox_height': bbox_height,
-                'bbox_area': bbox_area,
-                'x_min': min(x_coords),
-                'x_max': max(x_coords),
-                'y_min': min(y_coords),
-                'y_max': max(y_coords),
-                'positions': positions
-            })
-    
+
+        subG = G.subgraph(component)
+
+        num_nodes = len(component)
+        num_edges = subG.number_of_edges()
+        density = nx.density(subG) if num_nodes > 1 else 0
+
+        degrees = [subG.degree(node) for node in component]
+        avg_degree = np.mean(degrees) if degrees else 0
+
+        positions = [(G.nodes[node]['x'], G.nodes[node]['y']) for node in component]
+        x_coords = [pos[0] for pos in positions]
+        y_coords = [pos[1] for pos in positions]
+
+        bbox_width = max(x_coords) - min(x_coords)
+        bbox_height = max(y_coords) - min(y_coords)
+        bbox_area = bbox_width * bbox_height
+
+        try:
+            diameter = nx.diameter(subG) if nx.is_connected(subG) else 0
+        except Exception:
+            diameter = 0
+
+        cell_ids = {G.nodes[node]['cell_id'] for node in component}
+
+        network_stats.append({
+            'cell_id': list(cell_ids)[0] if cell_ids else -1,
+            'cells': list(cell_ids),
+            'num_cells': len(cell_ids),
+            'component': comp_idx,
+            'num_nodes': num_nodes,
+            'num_edges': num_edges,
+            'density': density,
+            'avg_degree': avg_degree,
+            'diameter': diameter,
+            'bbox_width': bbox_width,
+            'bbox_height': bbox_height,
+            'bbox_area': bbox_area,
+            'x_min': min(x_coords),
+            'x_max': max(x_coords),
+            'y_min': min(y_coords),
+            'y_max': max(y_coords),
+            'positions': positions,
+        })
+
     return pd.DataFrame(network_stats)
 
 
@@ -104,17 +89,13 @@ def extract_network_image(analyzer, data, overlay_image, network_info, output_di
     # Crop the overlay image
     crop_img = overlay_image[y_min:y_max, x_min:x_max]
     
-    # Get mitochondria data for this cell
     mito_df = analyzer.preprocess_data(data)
-    cell_mito = mito_df[mito_df['Parent_Cells'] == network_info['cell_id']]
-    
-    # Build the graph
-    G = analyzer.build_cell_graph(cell_mito)
+    G = analyzer.build_global_graph(mito_df)
     components = list(nx.connected_components(G))
-    
+
     if network_info['component'] >= len(components):
         return None
-    
+
     target_component = components[network_info['component']]
     
     # Create figure
@@ -145,13 +126,13 @@ def extract_network_image(analyzer, data, overlay_image, network_info, output_di
     nx.draw_networkx_labels(subG, positions, labels, font_size=8, 
                            font_color='black', font_weight='bold', ax=ax)
     
-    # Draw other networks in this cell in gray for context
+    # Draw other networks in gray for context
     for other_comp_idx, other_component in enumerate(components):
         if other_comp_idx == network_info['component']:
             continue
-            
+
         other_subG = G.subgraph(other_component)
-        other_positions = {node: (G.nodes[node]['x'] - x_min, G.nodes[node]['y'] - y_min) 
+        other_positions = {node: (G.nodes[node]['x'] - x_min, G.nodes[node]['y'] - y_min)
                           for node in other_component}
         
         # Only draw if in view
@@ -174,15 +155,18 @@ def extract_network_image(analyzer, data, overlay_image, network_info, output_di
     ax.set_ylim(y_max - y_min, 0)
     
     # Add detailed title
-    title = (f"Cell {network_info['cell_id']}, Component {network_info['component']}\n"
-            f"{network_info['num_nodes']} nodes, {network_info['num_edges']} edges\n"
-            f"Density: {network_info['density']:.3f}, Avg Degree: {network_info['avg_degree']:.2f}")
+    cells_str = ",".join(str(c) for c in network_info.get('cells', [network_info.get('cell_id', '')]))
+    title = (
+        f"Cells {cells_str}, Component {network_info['component']}\n"
+        f"{network_info['num_nodes']} nodes, {network_info['num_edges']} edges\n"
+        f"Density: {network_info['density']:.3f}, Avg Degree: {network_info['avg_degree']:.2f}"
+    )
     
     ax.set_title(title, fontsize=12, pad=15)
     ax.axis('off')
     
     # Save
-    filename = f"network_cell_{network_info['cell_id']}_comp_{network_info['component']}.png"
+    filename = f"network_comp_{network_info['component']}.png"
     output_path = os.path.join(output_dir, filename)
     
     plt.tight_layout()
@@ -217,30 +201,42 @@ def create_networks_summary(networks_df, output_dir):
         f.write("TOP 20 NETWORKS BY SIZE (Most Nodes)\n")
         f.write("-" * 40 + "\n")
         for idx, row in by_size.iterrows():
-            f.write(f"Cell {row['cell_id']}, Comp {row['component']}: "
-                   f"{row['num_nodes']} nodes, {row['num_edges']} edges, "
-                   f"density {row['density']:.3f}\n")
+            cells = ",".join(str(c) for c in row['cells'])
+            f.write(
+                f"Cells {cells}, Comp {row['component']}: "
+                f"{row['num_nodes']} nodes, {row['num_edges']} edges, "
+                f"density {row['density']:.3f}\n"
+            )
         
         f.write(f"\n\nTOP 20 NETWORKS BY DENSITY (Most Connected)\n")
         f.write("-" * 40 + "\n")
         for idx, row in by_density.iterrows():
-            f.write(f"Cell {row['cell_id']}, Comp {row['component']}: "
-                   f"density {row['density']:.3f}, {row['num_nodes']} nodes, "
-                   f"{row['num_edges']} edges\n")
+            cells = ",".join(str(c) for c in row['cells'])
+            f.write(
+                f"Cells {cells}, Comp {row['component']}: "
+                f"density {row['density']:.3f}, {row['num_nodes']} nodes, "
+                f"{row['num_edges']} edges\n"
+            )
         
         f.write(f"\n\nTOP 20 NETWORKS BY EDGE COUNT\n")
         f.write("-" * 40 + "\n")
         for idx, row in by_edges.iterrows():
-            f.write(f"Cell {row['cell_id']}, Comp {row['component']}: "
-                   f"{row['num_edges']} edges, {row['num_nodes']} nodes, "
-                   f"density {row['density']:.3f}\n")
+            cells = ",".join(str(c) for c in row['cells'])
+            f.write(
+                f"Cells {cells}, Comp {row['component']}: "
+                f"{row['num_edges']} edges, {row['num_nodes']} nodes, "
+                f"density {row['density']:.3f}\n"
+            )
         
         f.write(f"\n\nTOP 20 NETWORKS BY AVERAGE DEGREE\n")
         f.write("-" * 40 + "\n")
         for idx, row in by_degree.iterrows():
-            f.write(f"Cell {row['cell_id']}, Comp {row['component']}: "
-                   f"avg degree {row['avg_degree']:.2f}, {row['num_nodes']} nodes, "
-                   f"density {row['density']:.3f}\n")
+            cells = ",".join(str(c) for c in row['cells'])
+            f.write(
+                f"Cells {cells}, Comp {row['component']}: "
+                f"avg degree {row['avg_degree']:.2f}, {row['num_nodes']} nodes, "
+                f"density {row['density']:.3f}\n"
+            )
     
     print(f"✅ Network rankings saved: {summary_path}")
     
@@ -306,15 +302,19 @@ def main():
                 output_path = extract_network_image(
                     analyzer, data, overlay_image, network_info, category_dir
                 )
-                
+
                 if output_path:
                     extracted_files.append((output_path, network_info, description))
-                    print(f"  ✅ Extracted: Cell {network_info['cell_id']}, "
-                          f"{network_info['num_nodes']} nodes, "
-                          f"density {network_info['density']:.3f}")
-                
+                    cells = ",".join(str(c) for c in network_info['cells'])
+                    print(
+                        f"  ✅ Extracted: Cells {cells}, "
+                        f"{network_info['num_nodes']} nodes, "
+                        f"density {network_info['density']:.3f}"
+                    )
+
             except Exception as e:
-                print(f"  ❌ Failed to extract Cell {network_info['cell_id']}: {e}")
+                cells = ",".join(str(c) for c in network_info['cells'])
+                print(f"  ❌ Failed to extract Cells {cells}: {e}")
     
     # Create HTML viewer for extracted networks
     create_networks_html_viewer(extracted_files, output_dir)
@@ -375,9 +375,9 @@ def create_networks_html_viewer(extracted_files, output_dir):
             
             html_content += f"""
             <div class="network-item">
-                <img src="{relative_path}" alt="Network Cell {network_info['cell_id']}">
+                <img src="{relative_path}" alt="Network Component {network_info['component']}">
                 <div class="network-stats">
-                    <strong>Cell {network_info['cell_id']}, Component {network_info['component']}</strong>
+                    <strong>Cells {','.join(str(c) for c in network_info['cells'])}, Component {network_info['component']}</strong>
                     <div class="stats-grid">
                         <div>Nodes: {network_info['num_nodes']}</div>
                         <div>Edges: {network_info['num_edges']}</div>

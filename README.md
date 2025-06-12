@@ -50,4 +50,7 @@ From your data:
 Perfect coordinate alignment ensures networks appear exactly on mitochondria in the CellProfiler overlay.
 
 # NOTES
-I don't think the networks are going across cells, the densest networks being shown now are ones that reside in the same cell
+Cross-cell mitochondrial networks are now supported. Networks are built across
+all cells and connections are created when mitochondria are within the distance
+threshold **or when their edges touch**. This allows subnetworks to span
+multiple cells when organelles are adjacent.
