@@ -1,0 +1,102 @@
+MITOCHONDRIAL NETWORK RANKINGS
+==================================================
+
+Total networks analyzed: 1420
+Average network size: 1.9 nodes
+Average density: 0.388
+Average degree: 0.65
+
+TOP 20 NETWORKS BY SIZE (Most Nodes)
+----------------------------------------
+Cell 423, Comp 0: 13 nodes, 19 edges, density 0.244
+Cell 157, Comp 0: 10 nodes, 11 edges, density 0.244
+Cell 754, Comp 0: 10 nodes, 26 edges, density 0.578
+Cell 124, Comp 0: 8 nodes, 9 edges, density 0.321
+Cell 141, Comp 0: 8 nodes, 9 edges, density 0.321
+Cell 373, Comp 0: 8 nodes, 12 edges, density 0.429
+Cell 549, Comp 0: 8 nodes, 8 edges, density 0.286
+Cell 201, Comp 0: 7 nodes, 9 edges, density 0.429
+Cell 455, Comp 1: 7 nodes, 7 edges, density 0.333
+Cell 612, Comp 0: 7 nodes, 8 edges, density 0.381
+Cell 625, Comp 1: 7 nodes, 11 edges, density 0.524
+Cell 674, Comp 0: 7 nodes, 7 edges, density 0.333
+Cell 231, Comp 0: 6 nodes, 13 edges, density 0.867
+Cell 315, Comp 0: 6 nodes, 8 edges, density 0.533
+Cell 353, Comp 0: 6 nodes, 7 edges, density 0.467
+Cell 384, Comp 0: 6 nodes, 7 edges, density 0.467
+Cell 381, Comp 0: 6 nodes, 8 edges, density 0.533
+Cell 460, Comp 0: 6 nodes, 7 edges, density 0.467
+Cell 478, Comp 0: 6 nodes, 6 edges, density 0.400
+Cell 522, Comp 0: 6 nodes, 7 edges, density 0.467
+
+
+TOP 20 NETWORKS BY DENSITY (Most Connected)
+----------------------------------------
+Cell 6, Comp 0: density 1.000, 2 nodes, 1 edges
+Cell 7, Comp 0: density 1.000, 2 nodes, 1 edges
+Cell 14, Comp 0: density 1.000, 2 nodes, 1 edges
+Cell 10, Comp 0: density 1.000, 2 nodes, 1 edges
+Cell 11, Comp 0: density 1.000, 3 nodes, 3 edges
+Cell 25, Comp 1: density 1.000, 2 nodes, 1 edges
+Cell 40, Comp 0: density 1.000, 2 nodes, 1 edges
+Cell 29, Comp 2: density 1.000, 2 nodes, 1 edges
+Cell 34, Comp 0: density 1.000, 2 nodes, 1 edges
+Cell 33, Comp 0: density 1.000, 2 nodes, 1 edges
+Cell 52, Comp 0: density 1.000, 2 nodes, 1 edges
+Cell 39, Comp 0: density 1.000, 2 nodes, 1 edges
+Cell 53, Comp 0: density 1.000, 2 nodes, 1 edges
+Cell 58, Comp 0: density 1.000, 2 nodes, 1 edges
+Cell 61, Comp 0: density 1.000, 2 nodes, 1 edges
+Cell 62, Comp 0: density 1.000, 2 nodes, 1 edges
+Cell 81, Comp 1: density 1.000, 3 nodes, 3 edges
+Cell 67, Comp 1: density 1.000, 2 nodes, 1 edges
+Cell 70, Comp 0: density 1.000, 2 nodes, 1 edges
+Cell 83, Comp 1: density 1.000, 3 nodes, 3 edges
+
+
+TOP 20 NETWORKS BY EDGE COUNT
+----------------------------------------
+Cell 754, Comp 0: 26 edges, 10 nodes, density 0.578
+Cell 423, Comp 0: 19 edges, 13 nodes, density 0.244
+Cell 231, Comp 0: 13 edges, 6 nodes, density 0.867
+Cell 373, Comp 0: 12 edges, 8 nodes, density 0.429
+Cell 157, Comp 0: 11 edges, 10 nodes, density 0.244
+Cell 625, Comp 1: 11 edges, 7 nodes, density 0.524
+Cell 541, Comp 0: 10 edges, 6 nodes, density 0.667
+Cell 997, Comp 1: 10 edges, 5 nodes, density 1.000
+Cell 124, Comp 0: 9 edges, 8 nodes, density 0.321
+Cell 141, Comp 0: 9 edges, 8 nodes, density 0.321
+Cell 201, Comp 0: 9 edges, 7 nodes, density 0.429
+Cell 395, Comp 1: 9 edges, 5 nodes, density 0.900
+Cell 315, Comp 0: 8 edges, 6 nodes, density 0.533
+Cell 381, Comp 0: 8 edges, 6 nodes, density 0.533
+Cell 536, Comp 1: 8 edges, 6 nodes, density 0.533
+Cell 549, Comp 0: 8 edges, 8 nodes, density 0.286
+Cell 566, Comp 1: 8 edges, 6 nodes, density 0.533
+Cell 612, Comp 0: 8 edges, 7 nodes, density 0.381
+Cell 685, Comp 1: 8 edges, 5 nodes, density 0.800
+Cell 737, Comp 0: 8 edges, 6 nodes, density 0.533
+
+
+TOP 20 NETWORKS BY AVERAGE DEGREE
+----------------------------------------
+Cell 754, Comp 0: avg degree 5.20, 10 nodes, density 0.578
+Cell 231, Comp 0: avg degree 4.33, 6 nodes, density 0.867
+Cell 997, Comp 1: avg degree 4.00, 5 nodes, density 1.000
+Cell 395, Comp 1: avg degree 3.60, 5 nodes, density 0.900
+Cell 541, Comp 0: avg degree 3.33, 6 nodes, density 0.667
+Cell 685, Comp 1: avg degree 3.20, 5 nodes, density 0.800
+Cell 625, Comp 1: avg degree 3.14, 7 nodes, density 0.524
+Cell 208, Comp 3: avg degree 3.00, 4 nodes, density 1.000
+Cell 191, Comp 1: avg degree 3.00, 4 nodes, density 1.000
+Cell 281, Comp 0: avg degree 3.00, 4 nodes, density 1.000
+Cell 373, Comp 0: avg degree 3.00, 8 nodes, density 0.429
+Cell 594, Comp 0: avg degree 3.00, 4 nodes, density 1.000
+Cell 744, Comp 2: avg degree 3.00, 4 nodes, density 1.000
+Cell 794, Comp 0: avg degree 3.00, 4 nodes, density 1.000
+Cell 819, Comp 1: avg degree 3.00, 4 nodes, density 1.000
+Cell 854, Comp 0: avg degree 3.00, 4 nodes, density 1.000
+Cell 878, Comp 0: avg degree 3.00, 4 nodes, density 1.000
+Cell 979, Comp 0: avg degree 3.00, 4 nodes, density 1.000
+Cell 423, Comp 0: avg degree 2.92, 13 nodes, density 0.244
+Cell 230, Comp 1: avg degree 2.80, 5 nodes, density 0.700
